@@ -1,0 +1,117 @@
+bits 64
+section .data
+raz: 
+    db 6
+array:
+    db 1, 2, 3, 4, 5
+    
+matrix:
+    db 3,	6,	7,	5,	3,	5	
+    db 6,	2,	9,	1,	2,	7	
+    db 0,	9,	3,	6,	0,	6	
+    db 2,	6,	1,	8,	7,	9	
+    db 2,	0,	2,	3,	7,	5	
+    db 9,	2,	2,	8,	9,	7
+sum:
+    db 0, 0, 0, 0, 0, 0
+
+section .text
+global _start
+_start:
+s2:
+    
+s1:
+    add bl, [matrix + rcx] ; summ
+    add ecx, 6
+    cmp ecx, 36
+    jl s1
+    
+    mov eax, ecx
+    mov ecx, 36
+    xor edx, edx
+    div ecx
+    mov ecx, edx
+    mov [sum + rcx], bl
+    xor bl, bl
+    inc ecx             ; следующий столбец
+    cmp ecx, 6
+    jne s2
+    
+    mov ecx, 1 ; i
+
+bin_search:
+    mov eax, ecx ;r
+    dec eax
+    mov ebx, 0 ;l
+s3:    
+    mov edx, eax
+    add edx, ebx ; m = l + r
+    shr edx, 1          ; m = (l + r) / 2; !
+    
+    
+    push dx
+    mov dl, byte [sum+edx]
+    cmp dl, byte [sum + ecx]
+    pop dx
+    jl L
+
+
+R:
+   mov eax, edx
+   cmp eax, 0
+   je kon
+   dec eax
+   cmp eax, ebx
+   jb kon
+   jmp s3
+    
+L:
+    mov ebx, edx
+    inc ebx
+    cmp eax, ebx
+    jb kon
+    jmp s3
+    
+    
+    
+    
+kon:
+    cmp ecx, ebx
+    inc ecx
+    je con
+    dec ecx
+    push cx
+    mov al, byte [sum + ecx]
+    
+s4:
+    dec ecx
+    mov dl, byte [sum + ecx]
+    mov byte [sum + ecx + 1], dl
+    cmp ecx, ebx
+    jne s4
+    mov byte[sum + ecx], al
+    pop cx
+    
+    xor r15, r15
+
+stolbi:    
+    mov al, byte [matrix + ebx]
+    mov dl, byte [matrix + ecx]
+    xchg eax, edx
+    mov byte[matrix + ecx], dl
+    mov byte[matrix + ebx], al
+    add dl, byte [raz]
+    add cl, byte [raz]
+    add r15, 1
+    cmp r15, 6
+    jne stolbi
+    sub ecx, 35
+con:
+    cmp cl, byte [raz]
+    jne bin_search
+    
+    mov eax, 6
+    mov edi, 0
+    syscall
+    
+     
